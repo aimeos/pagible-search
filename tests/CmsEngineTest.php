@@ -7,13 +7,12 @@
 
 namespace Tests;
 
-use Database\Seeders\TestSeeder;
+use Database\Seeders\CmsSeeder;
 use Aimeos\Cms\Scout\CmsEngine;
 use Aimeos\Cms\Models\Element;
 use Aimeos\Cms\Models\File;
 use Aimeos\Cms\Models\Page;
 use Aimeos\Cms\Filter;
-use Aimeos\Nestedset\NestedSet;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Support\Facades\DB;
@@ -37,7 +36,7 @@ class CmsEngineTest extends SearchTestAbstract
     {
         parent::setUp();
 
-        $this->seed( TestSeeder::class );
+        $this->seed( CmsSeeder::class );
         $conn = DB::connection( config( 'cms.db' ) );
 
         if( $conn->getDriverName() === 'sqlsrv' )
@@ -87,9 +86,9 @@ class CmsEngineTest extends SearchTestAbstract
         $this->assertLessThanOrEqual( 2, $result->count() );
 
         // order by
-        $result = Page::search( '' )->searchFields( 'draft' )->orderBy( NestedSet::LFT, 'asc' )->take( 25 )->get();
+        $result = Page::search( '' )->searchFields( 'draft' )->orderBy( '_lft', 'asc' )->take( 25 )->get();
         $this->assertGreaterThanOrEqual( 2, $result->count() );
-        $lfts = $result->pluck( NestedSet::LFT )->toArray();
+        $lfts = $result->pluck( '_lft' )->toArray();
         $sorted = $lfts;
         sort( $sorted );
         $this->assertEquals( $sorted, $lfts );
