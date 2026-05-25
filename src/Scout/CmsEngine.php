@@ -86,7 +86,7 @@ class CmsEngine extends Engine implements PaginatesEloquentModelsUsingDatabase
      */
     public function lazyMap( Builder $builder, $results, $model )
     {
-        return new LazyCollection( $results['results'] ?? collect() );
+        return new LazyCollection( $results['results']?->all() );
     }
 
 
@@ -306,7 +306,11 @@ class CmsEngine extends Engine implements PaginatesEloquentModelsUsingDatabase
             }
         }
 
-        return $query->limit( (int) ( $builder->limit ?? 25 ) );
+        if( !is_null( $builder->limit ) ) {
+            $query->limit( (int) $builder->limit );
+        }
+
+        return $query;
     }
 
 
@@ -327,7 +331,7 @@ class CmsEngine extends Engine implements PaginatesEloquentModelsUsingDatabase
         }
 
         return $db->table( 'cms_index' )
-            ->whereIn( 'indexable_id', $group->pluck( 'id' )->all() )
+            ->whereIn( 'indexable_id', $group->map( fn( $m ) => $m->getKey() )->all() )
             ->where( 'indexable_type', $type )
             ->where( 'tenant_id', \Aimeos\Cms\Tenancy::value() );
     }
